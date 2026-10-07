@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ta">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>CodeForge Voice AI</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(circle at 50% 20%, #10254a, #050816 55%);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    width: 100%;
+    max-width: 850px;
+    background: rgba(12, 22, 43, 0.94);
+    border: 1px solid #29466b;
+    border-radius: 28px;
+    padding: 30px;
+    box-shadow:
+        0 0 50px rgba(0, 200, 255, 0.12),
+        inset 0 0 30px rgba(30, 100, 200, 0.04);
+}
+
+.header {
+    text-align: center;
+}
+
+.logo {
+    font-size: 55px;
+}
+
+h1 {
+    margin: 5px 0;
+    font-size: 32px;
+}
+
+.subtitle {
+    color: #8fa8c7;
+    margin-bottom: 25px;
+}
+
+
+/* CONTROL PANEL */
+
+.control-panel {
+    background: #081326;
+    border: 1px solid #203c60;
+    border-radius: 20px;
+    padding: 25px;
+    text-align: center;
+}
+
+.panel-title {
+    color: #67e8f9;
+    font-size: 14px;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+
+/* MICROPHONE */
+
+.mic-button {
+    width: 115px;
+    height: 115px;
+    border-radius: 50%;
+    border: 2px solid #67e8f9;
+
+    background:
+        linear-gradient(
+            135deg,
+            #06b6d4,
+            #6366f1,
+            #7c3aed
+        );
+
+    color: white;
+    font-size: 48px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 25px rgba(34, 211, 238, 0.35);
+
+    transition: 0.25s;
+}
+
+.mic-button:hover {
+    transform: scale(1.06);
+}
+
+
+/* ACTIVE RECORDING */
+
+.mic-button.recording {
+
+    animation: recordingPulse 1.2s infinite;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #dc2626
+        );
+}
+
+@keyframes recordingPulse {
+
+    0% {
+        box-shadow:
+            0 0 10px #ef4444;
+    }
+
+    50% {
+        box-shadow:
+            0 0 50px #ef4444,
+            0 0 90px rgba(239, 68, 68, 0.35);
+    }
+
+    100% {
+        box-shadow:
+            0 0 10px #ef4444;
+    }
+}
+
+
+/* STATUS */
+
+.status {
+
+    margin-top: 20px;
+
+    font-size: 17px;
+
+    color: #67e8f9;
+}
+
+.status.recording {
+    color: #f87171;
+}
+
+
+/* VOICE LEVEL */
+
+.voice-level {
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    gap: 5px;
+
+    height: 40px;
+
+    margin-top: 15px;
+}
+
+.bar {
+
+    width: 5px;
+    height: 10px;
+
+    background: #22d3ee;
+
+    border-radius: 10px;
+
+    transition: height 0.1s;
+}
+
+.voice-level.active .bar {
+    animation: voiceWave 0.5s infinite alternate;
+}
+
+.bar:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.bar:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.bar:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.bar:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.bar:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+@keyframes voiceWave {
+
+    from {
+        height: 8px;
+    }
+
+    to {
+        height: 35px;
+    }
+
+}
+
+
+/* PANELS */
+
+.output-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 18px;
+
+    margin-top: 20px;
+}
+
+.box {
+
+    background: #071120;
+
+    border: 1px solid #203c60;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    min-height: 150px;
+}
+
+.label {
+
+    color: #67e8f9;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    margin-bottom: 12px;
+}
+
+.text {
+
+    color: #dbeafe;
+
+    line-height: 1.7;
+
+    white-space: pre-wrap;
+}
+
+
+/* MOBILE */
+
+@media(max-width:700px) {
+
+    .output-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <div class="logo">
+            🎙️
+        </div>
+
+        <h1>
+            CodeForge Voice AI
+        </h1>
+
+        <div class="subtitle">
+            Intelligent AI Voice Assistant
+        </div>
+
+    </div>
+
+
+    <!-- CONTROL PANEL -->
+
+    <div class="control-panel">
+
+        <div class="panel-title">
+            🎙️ VOICE CONTROL PANEL
+        </div>
+
+
+        <!-- MIC BUTTON -->
+
+        <button
+            id="micButton"
+            class="mic-button"
+            onclick="toggleVoice()">
+
+            🎤
+
+        </button>
+
+
+        <!-- STATUS -->
+
+        <div
+            id="status"
+            class="status">
+
+            🎤 மைக்கை அழுத்தி பேசுங்கள்
+
+        </div>
+
+
+        <!-- VOICE WAVE -->
+
+        <div
+            id="voiceLevel"
+            class="voice-level">
+
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- QUESTION + ANSWER -->
+
+    <div class="output-grid">
+
+
+        <!-- QUESTION -->
+
+        <div class="box">
+
+            <div class="label">
+
+                🎤 YOU SAID
+
+            </div>
+
+            <div
+                id="question"
+                class="text">
+
+                உங்கள் கேள்வி இங்கே வரும்...
+
+            </div>
+
+        </div>
+
+
+        <!-- ANSWER -->
+
+        <div class="box">
+
+            <div class="label">
+
+                🤖 AI RESPONSE
+
+            </div>
+
+            <div
+                id="answer"
+                class="text">
+
+                AI பதில் இங்கே வரும்...
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+const micButton =
+    document.getElementById("micButton");
+
+const statusText =
+    document.getElementById("status");
+
+const questionText =
+    document.getElementById("question");
+
+const answerText =
+    document.getElementById("answer");
+
+const voiceLevel =
+    document.getElementById("voiceLevel");
+
+
+const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+
+let recognition = null;
+
+let listening = false;
+
+
+
+/* CHECK BROWSER */
+
+if (!SpeechRecognition) {
+
+    statusText.textContent =
+        "❌ Chrome browser பயன்படுத்துங்கள்";
+
+}
+
+
+/* CREATE SPEECH RECOGNITION */
+
+if (SpeechRecognition) {
+
+    recognition =
+        new SpeechRecognition();
+
+
+    /* தமிழ் */
+
+    recognition.lang =
+        "ta-IN";
+
+
+    recognition.continuous =
+        false;
+
+
+    recognition.interimResults =
+        true;
+
+
+    recognition.maxAlternatives =
+        1;
+
+
+    /* START */
+
+    recognition.onstart =
+        function () {
+
+            listening = true;
+
+            micButton.classList.add(
+                "recording"
+            );
+
+            micButton.innerHTML =
+                "⏹️";
+
+            statusText.classList.add(
+                "recording"
+            );
+
+            statusText.textContent =
+                "🔴 கேட்கிறேன்... தமிழில் பேசுங்கள்";
+
+            voiceLevel.classList.add(
+                "active"
+            );
+
+        };
+
+
+    /* VOICE DETECTED */
+
+    recognition.onspeechstart =
+        function () {
+
+            statusText.textContent =
+                "🎙️ Voice detected...";
+
+        };
+
+
+    /* LIVE RESULT */
+
+    recognition.onresult =
+        function (event) {
+
+            let transcript = "";
+
+            for (
+                let i = event.resultIndex;
+                i < event.results.length;
+                i++
+            ) {
+
+                transcript +=
+                    event.results[i][0].transcript;
+
+            }
+
+
+            questionText.textContent =
+                transcript;
+
+
+            statusText.textContent =
+                "🎧 உங்கள் கேள்வியை புரிந்துகொள்கிறேன்...";
+
+
+            /* FINAL RESULT */
+
+            if (
+                event.results[
+                    event.results.length - 1
+                ].isFinal
+            ) {
+
+                statusText.textContent =
+                    "🤖 AI பதில் உருவாக்குகிறது...";
+
+                askAI(transcript);
+
+            }
+
+        };
+
+
+    /* ERROR */
+
+    recognition.onerror =
+        function (event) {
+
+            console.log(
+                "Speech error:",
+                event.error
+            );
+
+
+            if (event.error === "not-allowed") {
+
+                statusText.textContent =
+                    "❌ Microphone permission Allow செய்யுங்கள்";
+
+            }
+
+            else if (
+                event.error === "no-speech"
+            ) {
+
+                statusText.textContent =
+                    "⚠️ Voice கேட்கவில்லை. மீண்டும் பேசுங்கள்";
+
+            }
+
+            else {
+
+                statusText.textContent =
+                    "❌ Voice error: " +
+                    event.error;
+
+            }
+
+
+            stopVoice();
+
+        };
+
+
+    /* END */
+
+    recognition.onend =
+        function () {
+
+            listening = false;
+
+            micButton.classList.remove(
+                "recording"
+            );
+
+            micButton.innerHTML =
+                "🎤";
+
+            statusText.classList.remove(
+                "recording"
+            );
+
+            voiceLevel.classList.remove(
+                "active"
+            );
+
+        };
+
+}
+
+
+/* BUTTON */
+
+function toggleVoice() {
+
+    if (!recognition) {
+
+        alert(
+            "Google Chrome-ல் இந்த website-ஐ திறக்கவும்."
+        );
+
+        return;
+
+    }
+
+
+    if (listening) {
+
+        recognition.stop();
+
+        return;
+
+    }
+
+
+    questionText.textContent =
+        "கேட்க தயாராக உள்ளது...";
+
+
+    answerText.textContent =
+        "AI பதிலுக்காக காத்திருக்கிறது...";
+
+
+    try {
+
+        recognition.start();
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+    }
+
+}
+
+
+/* STOP */
+
+function stopVoice() {
+
+    if (recognition && listening) {
+
+        recognition.stop();
+
+    }
+
+}
+
+
+/* SEND QUESTION TO GEMINI */
+
+async function askAI(question) {
+
+    if (!question.trim()) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/ask",
+                {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        question: question
+                    })
+
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (data.answer) {
+
+            answerText.textContent =
+                data.answer;
+
+
+            statusText.textContent =
+                "🔊 தமிழ் பதிலை பேசுகிறது...";
+
+
+            speakTamil(
+                data.answer
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        answerText.textContent =
+            "❌ AI server-ஐ connect செய்ய முடியவில்லை.";
+
+        statusText.textContent =
+            "❌ Connection error";
+
+    }
+
+}
+
+
+/* TAMIL VOICE OUTPUT */
+
+function speakTamil(text) {
+
+    window.speechSynthesis.cancel();
+
+
+    const speech =
+        new SpeechSynthesisUtterance(
+            text
+        );
+
+
+    speech.lang =
+        "ta-IN";
+
+
+    speech.rate =
+        0.9;
+
+
+    speech.pitch =
+        1;
+
+
+    speech.volume =
+        1;
+
+
+    speech.onend =
+        function () {
+
+            statusText.textContent =
+                "✅ அடுத்த கேள்விக்கு தயாராக உள்ளது";
+
+        };
+
+
+    window.speechSynthesis.speak(
+        speech
+    );
+
+}
+
+
+</script>
+
+</body>
+
+</html>
